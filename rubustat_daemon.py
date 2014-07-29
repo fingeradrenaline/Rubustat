@@ -32,6 +32,8 @@ if sqliteEnabled == True:
 
 #mail config
 mailEnabled = config.getboolean('mail', 'enabled')
+
+
 if mailEnabled == True:
     import smtplib
 
@@ -43,7 +45,7 @@ if mailEnabled == True:
     sender = config.get('mailconf','sender')
     recipient = config.get('mailconf','recipient')
     subject = config.get('mailconf','subject')
-    body = config.get('mailconf','body')
+    #body = config.get('mailconf','body')
     errorThreshold = float(config.get('mail','errorThreshold'))
 
 
@@ -107,7 +109,7 @@ class rubustatDaemon(Daemon):
         return 0
 
     if mailEnabled == True:
-        def sendErrorMail(self):
+        def sendErrorMail(self, body):
             headers = ["From: " + sender,
                        "Subject: " + subject,
                        "To: " + recipient,
@@ -128,6 +130,8 @@ class rubustatDaemon(Daemon):
         lastLog = datetime.datetime.now()
         lastMail = datetime.datetime.now()
         self.configureGPIO()
+	emails = 0
+	length = 0
         while True:
 
             #change cwd to wherever rubustat_daemon is
@@ -146,12 +150,18 @@ class rubustatDaemon(Daemon):
             now = datetime.datetime.now()
             logElapsed = now - lastLog
             mailElapsed = now - lastMail
-
+	
             ### check if we need to send error mail
             #cooling 
             #it's 78, we want it to be 72, and the error threshold is 5 = this triggers
-            if mailEnabled == True and (mailElapsed > datetime.timedelta(minutes=20)) and (indoorTemp - float(targetTemp) ) > errorThreshold:
-                self.sendErrorMail()
+            if mailEnabled == True and (mailElapsed > datetime.timedelta(minutes=1)) and (indoorTemp - float(targetTemp) ) > errorThreshold and emails <= 5:
+		length += 20
+		emails += 1
+		body = "The A/C has been at least 10 degrees off from it's setpoint for " + str(length) + " minutes. There may be a problem." + " This is notification " + str(emails) + " of 6. <br><br>The setpoint is " + str(targetTemp) + " and the current temperature is " + str(indoorTemp) + "."
+		if emails == 6:
+		    body = "The A/C has been at least 10 degrees off from it's setpoint for " + str(length) + " minutes. There may be a problem." + " This is notification " + str(emails) + " of 6. No more mail will be sent. Check http://THERMOSTAT-ADDRESS for updates. <br><br>The setpoint is " + str(targetTemp) + " and the current temperature is " + str(indoorTemp) + "."
+		self.sendErrorMail(body)
+    
                 lastMail = datetime.datetime.now()
                 if DEBUG == 1:
                     log = open("logs/debug_" + datetime.datetime.now().strftime('%Y%m%d') + ".log", "a")
@@ -160,8 +170,14 @@ class rubustatDaemon(Daemon):
 
             #heat 
             #it's 72, we want it to be 78, and the error threshold is 5 = this triggers
-            if mailEnabled == True and (mailElapsed > datetime.timedelta(minutes=20)) and (float(targetTemp) - indoorTemp ) > errorThreshold:
-                self.sendErrorMail()
+            if mailEnabled == True and (mailElapsed > datetime.timedelta(minutes=1)) and (float(targetTemp) - indoorTemp ) > errorThreshold and emails <=5:
+		length += 20
+		emails += 1
+		body = "The A/C has been at least 10 degrees off from it's setpoint for " + str(length) + " minutes. There may be a problem." + " This is notification " + str(emails) + " of 6. <br><br>The setpoint is " + str(targetTemp) + " and the current temperature is " + str(indoorTemp) + "."
+		if emails == 6:
+		    body = "The A/C has been at least 10 degrees off from it's setpoint for " + str(length) + " minutes. There may be a problem." + " This is notification " + str(emails) + " of 6. No more mail will be sent. Check http://THERMOSTAT-ADDRESS for updates. <br><br>The setpoint is " + str(targetTemp) + " and the current temperature is " + str(indoorTemp) + "."
+		
+		self.sendErrorMail()
                 lastMail = datetime.datetime.now()
                 if DEBUG == 1:
                     log = open("logs/debug_" + datetime.datetime.now().strftime('%Y%m%d') + ".log", "a")
@@ -193,6 +209,8 @@ class rubustatDaemon(Daemon):
                             log = open("logs/debug_" + datetime.datetime.now().strftime('%Y%m%d') + ".log", "a")
                             log.write("STATE: Switching to fan_to_idle at " + time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()) + "\n")
                             log.close()
+			emails = 0
+			length = 0
                         self.fan_to_idle()
                         time.sleep(30)
                         if DEBUG == 1:
@@ -224,6 +242,8 @@ class rubustatDaemon(Daemon):
                             log = open("logs/debug_" + datetime.datetime.now().strftime('%Y%m%d') + ".log", "a")
                             log.write("STATE: Switching to fan_to_idle at " + time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()) + "\n")
                             log.close()
+			emails = 0
+			length = 0
                         self.fan_to_idle()
                         time.sleep(30)
                         if DEBUG == 1:
