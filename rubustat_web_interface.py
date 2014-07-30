@@ -10,6 +10,26 @@ from getIndoorTemp import getIndoorTemp
 from flask import Flask, request, session, g, redirect, url_for, \
      abort, render_template, flash, jsonify
 
+app = Flask(__name__)
+#hard to be secret in open source... >.>
+app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
+
+abspath = os.path.abspath(__file__)
+dname = os.path.dirname(abspath)
+os.chdir(dname)
+
+config = ConfigParser.ConfigParser()
+config.read("config.txt")
+ZIP = config.get('weather','ZIP')
+HEATER_PIN = int(config.get('main','HEATER_PIN'))
+AC_PIN = int(config.get('main','AC_PIN'))
+FAN_PIN = int(config.get('main','FAN_PIN'))
+weatherEnabled = config.getboolean('weather','enabled')
+
+#start the daemon in the background
+subprocess.Popen("/usr/bin/python rubustat_daemon.py start", shell=True)
+
+
 
 def check_auth(username, password):
     """This function is called to check if a username /
@@ -33,24 +53,6 @@ def requires_auth(f):
         return f(*args, **kwargs)
     return decorated
 
-app = Flask(__name__)
-#hard to be secret in open source... >.>
-app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
-
-abspath = os.path.abspath(__file__)
-dname = os.path.dirname(abspath)
-os.chdir(dname)
-
-config = ConfigParser.ConfigParser()
-config.read("config.txt")
-ZIP = config.get('weather','ZIP')
-HEATER_PIN = int(config.get('main','HEATER_PIN'))
-AC_PIN = int(config.get('main','AC_PIN'))
-FAN_PIN = int(config.get('main','FAN_PIN'))
-weatherEnabled = config.getboolean('weather','enabled')
-
-#start the daemon in the background
-subprocess.Popen("/usr/bin/python rubustat_daemon.py start", shell=True)
 
 if weatherEnabled == True:
     import pywapi

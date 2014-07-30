@@ -48,6 +48,65 @@ if mailEnabled == True:
     #body = config.get('mailconf','body')
     errorThreshold = float(config.get('mail','errorThreshold'))
 
+#schedule config
+scheduleEnabled = config.getboolean('schedule', 'enabled')
+
+
+if scheduleEnabled == True:
+
+    config.read("scheduleconf.txt")
+    on_temp = config.get('scheduleconf','on_temp')
+    off_temp = config.get('scheduleconf','off_temp')
+    now = datetime.datetime.now()
+    
+    monday_off_hour = config.get('scheduleconf','monday_off_hour')
+    monday_off_minute = config.get('scheduleconf','monday_off_minute')
+    monday_on_hour = config.get('scheduleconf','monday_on_hour')
+    monday_on_minute = config.get('scheduleconf','monday_on_minute')
+    monday_off = now.replace(hour=int(monday_off_hour), minute=int(monday_off_minute), second=0, microsecond=0)
+    monday_on = now.replace(hour=int(monday_on_hour), minute=int(monday_on_minute), second=0, microsecond=0)
+    
+    tuesday_off_hour = config.get('scheduleconf','tuesday_off_hour')
+    tuesday_off_minute = config.get('scheduleconf','tuesday_off_minute')
+    tuesday_on_hour = config.get('scheduleconf','tuesday_on_hour')
+    tuesday_on_minute = config.get('scheduleconf','tuesday_on_minute')
+    tuesday_off = now.replace(hour=int(tuesday_off_hour), minute=int(tuesday_off_minute), second=0, microsecond=0)
+    tuesday_on = now.replace(hour=int(tuesday_on_hour), minute=int(tuesday_on_minute), second=0, microsecond=0)
+    
+    wednesday_off_hour = config.get('scheduleconf','wednesday_off_hour')
+    wednesday_off_minute = config.get('scheduleconf','wednesday_off_minute')
+    wednesday_on_hour = config.get('scheduleconf','wednesday_on_hour')
+    wednesday_on_minute = config.get('scheduleconf','wednesday_on_minute')
+    wednesday_off = now.replace(hour=int(wednesday_off_hour), minute=int(wednesday_off_minute), second=0, microsecond=0)
+    wednesday_on = now.replace(hour=int(wednesday_on_hour), minute=int(wednesday_on_minute), second=0, microsecond=0)
+    
+    thursday_off_hour = config.get('scheduleconf','thursday_off_hour')
+    thursday_off_minute = config.get('scheduleconf','thursday_off_minute')
+    thursday_on_hour = config.get('scheduleconf','thursday_on_hour')
+    thursday_on_minute = config.get('scheduleconf','thursday_on_minute')
+    thursday_off = now.replace(hour=int(thursday_off_hour), minute=int(thursday_off_minute), second=0, microsecond=0)
+    thursday_on = now.replace(hour=int(thursday_on_hour), minute=int(thursday_on_minute), second=0, microsecond=0)
+    
+    friday_off_hour = config.get('scheduleconf','friday_off_hour')
+    friday_off_minute = config.get('scheduleconf','friday_off_minute')
+    friday_on_hour = config.get('scheduleconf','friday_on_hour')
+    friday_on_minute = config.get('scheduleconf','friday_on_minute')
+    friday_off = now.replace(hour=int(friday_off_hour), minute=int(friday_off_minute), second=0, microsecond=0)
+    friday_on = now.replace(hour=int(friday_on_hour), minute=int(friday_on_minute), second=0, microsecond=0)
+    
+    saturday_off_hour = config.get('scheduleconf','saturday_off_hour')
+    saturday_off_minute = config.get('scheduleconf','saturday_off_minute')
+    saturday_on_hour = config.get('scheduleconf','saturday_on_hour')
+    saturday_on_minute = config.get('scheduleconf','saturday_on_minute')
+    saturday_off = now.replace(hour=int(saturday_off_hour), minute=int(saturday_off_minute), second=0, microsecond=0)
+    saturday_on = now.replace(hour=int(saturday_on_hour), minute=int(saturday_on_minute), second=0, microsecond=0)
+    
+    sunday_off_hour = config.get('scheduleconf','sunday_off_hour')
+    sunday_off_minute = config.get('scheduleconf','sunday_off_minute')
+    sunday_on_hour = config.get('scheduleconf','sunday_on_hour')
+    sunday_on_minute = config.get('scheduleconf','sunday_on_minute')
+    sunday_off = now.replace(hour=int(sunday_off_hour), minute=int(sunday_off_minute), second=0, microsecond=0)
+    sunday_on = now.replace(hour=int(sunday_on_hour), minute=int(sunday_on_minute), second=0, microsecond=0)
 
 
 class rubustatDaemon(Daemon):
@@ -126,6 +185,133 @@ class rubustatDaemon(Daemon):
             session.sendmail(sender, recipient, headers + "\r\n\r\n" + body)
             session.quit()
 
+    if scheduleEnabled == True:
+	def schedule_change(self, scheduled):
+	    #Reads contents of status file
+	    f = open("status", "r")
+	    targetTemp = f.readline().strip()
+	    mode = f.readline()
+	    f.close()
+	    #if the current time is within the scheduled on-period
+	    if scheduled == True:
+		f = open("status", "w")
+		f.write(on_temp + "\n" + mode)
+		f.close()
+	    #if the current time is within the scheduled off-period
+	    if scheduled == False:
+		f = open("status", "w")
+		f.write(off_temp + "\n" + mode)
+		f.close()
+	    
+
+	def check_schedule(self):
+	    now = datetime.datetime.now()
+	    day_of_week = datetime.date.today().weekday() # 0 is Monday, 6 is Sunday
+	    
+	    #wow this is ugly
+	    #If there is a problem, defaults to off_temp
+	    #Ignore all the comments, they're for bug squashing
+	    if day_of_week == 0:
+		if now < monday_off:
+		    #body = "Off: " +  str(monday_off) + "<br>On: " + str(monday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>Before Off <br>Temp:" + on_temp
+		    scheduled = True
+		    #self.sendErrorMail(body)
+		elif now > monday_off and now < monday_on:
+		    #body = "Off: " +  str(monday_off) + "<br>On: " + str(monday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>Before On <br>Temp:" + off_temp
+		    scheduled = False
+		    #self.sendErrorMail(body)
+		elif now > monday_on:
+		    #body = "Off: " +  str(monday_off) + "<br>On: " + str(monday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>After On <br>Temp:" + on_temp
+		    scheduled = True
+		    #self.sendErrorMail(body)
+	    
+	    elif day_of_week == 1:
+		if now < tuesday_off:
+		    #body = "Off: " +  str(tuesday_off) + "<br>On: " + str(tuesday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>Before Off <br>Temp:" + on_temp
+		    scheduled = True
+		    #self.sendErrorMail(body)
+		elif now > tuesday_off and now < tuesday_on:
+		    #body = "Off: " +  str(tuesday_off) + "<br>On: " + str(tuesday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>Before On <br>Temp:" + off_temp
+		    scheduled = False
+		    #self.sendErrorMail(body)
+		elif now > tuesday_on:
+		    #body = "Off: " +  str(tuesday_off) + "<br>On: " + str(tuesday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>After On <br>Temp:" + on_temp
+		    scheduled = True
+		    #self.sendErrorMail(body)
+		
+	    elif day_of_week == 2:
+		if now < wednesday_off:
+		    #body = "Off: " +  str(wednesday_off) + "<br>On: " + str(wednesday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>Before Off <br>Temp:" + on_temp
+		    scheduled = True
+		    #self.sendErrorMail(body)
+		elif now > wednesday_off and now < wednesday_on:
+		    #body = "Off: " +  str(wednesday_off) + "<br>On: " + str(wednesday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>Before On <br>Temp:" + off_temp
+		    scheduled = False
+		    #self.sendErrorMail(body)
+		elif now > wednesday_on:
+		    #body = "Off: " +  str(wednesday_off) + "<br>On: " + str(wednesday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>After On <br>Temp:" + on_temp
+		    scheduled = True
+		    #self.sendErrorMail(body)
+		    
+	    elif day_of_week == 3:
+		if now < thursday_off:
+		    #body = "Off: " +  str(thursday_off) + "<br>On: " + str(thursday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>Before Off <br>Temp:" + on_temp
+		    scheduled = True
+		    #self.sendErrorMail(body)
+		elif now > thursday_off and now < thursday_on:
+		    #body = "Off: " +  str(thursday_off) + "<br>On: " + str(thursday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>Before On <br>Temp:" + off_temp
+		    scheduled = False
+		    #self.sendErrorMail(body)
+		elif now > thursday_on:
+		    #body = "Off: " +  str(thursday_off) + "<br>On: " + str(thursday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>After On <br>Temp:" + on_temp
+		    scheduled = True
+		    #self.sendErrorMail(body)
+		    
+	    elif day_of_week == 4:
+		if now < friday_off:
+		    #body = "Off: " +  str(friday_off) + "<br>On: " + str(friday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>Before Off <br>Temp:" + on_temp
+		    scheduled = True
+		    #self.sendErrorMail(body)
+		elif now > friday_off and now < friday_on:
+		    #body = "Off: " +  str(friday_off) + "<br>On: " + str(friday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>Before On <br>Temp:" + off_temp
+		    scheduled = False
+		    #self.sendErrorMail(body)
+		elif now > friday_on:
+		    #body = "Off: " +  str(friday_off) + "<br>On: " + str(friday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>After On <br>Temp:" + on_temp
+		    scheduled = True
+		    #self.sendErrorMail(body)
+		    
+	    elif day_of_week == 5:
+		if now < saturday_off:
+		    #body = "Off: " +  str(saturday_off) + "<br>On: " + str(saturday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>Before Off <br>Temp:" + on_temp
+		    scheduled = True
+		    #self.sendErrorMail(body)
+		elif now > saturday_off and now < saturday_on:
+		    #body = "Off: " +  str(saturday_off) + "<br>On: " + str(saturday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>Before On <br>Temp:" + off_temp
+		    scheduled = False
+		    #self.sendErrorMail(body)
+		elif now > saturday_on:
+		    #body = "Off: " +  str(saturday_off) + "<br>On: " + str(saturday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>After On <br>Temp:" + on_temp
+		    scheduled = True
+		    #self.sendErrorMail(body)
+		    
+	    elif day_of_week == 6:
+		if now < sunday_off:
+		    #body = "Off: " +  str(sunday_off) + "<br>On: " + str(sunday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>Before Off <br>Temp:" + on_temp
+		    scheduled = True
+		    #self.sendErrorMail(body)
+		elif now > sunday_off and now < sunday_on:
+		    #body = "Off: " +  str(sunday_off) + "<br>On: " + str(sunday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>Before On <br>Temp:" + off_temp
+		    scheduled = False
+		    #self.sendErrorMail(body)
+		elif now > sunday_on:
+		    #body = "Off: " +  str(sunday_off) + "<br>On: " + str(sunday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>After On <br>Temp:" + on_temp
+		    scheduled = True
+		    #self.sendErrorMail(body)
+		
+
+	    self.schedule_change(scheduled)
+
     def run(self):
         lastLog = datetime.datetime.now()
         lastMail = datetime.datetime.now()
@@ -150,11 +336,12 @@ class rubustatDaemon(Daemon):
             now = datetime.datetime.now()
             logElapsed = now - lastLog
             mailElapsed = now - lastMail
+	    self.check_schedule()
 	
             ### check if we need to send error mail
             #cooling 
             #it's 78, we want it to be 72, and the error threshold is 5 = this triggers
-            if mailEnabled == True and (mailElapsed > datetime.timedelta(minutes=1)) and (indoorTemp - float(targetTemp) ) > errorThreshold and emails <= 5:
+            if mailEnabled == True and (mailElapsed > datetime.timedelta(minutes=20)) and (indoorTemp - float(targetTemp) ) > errorThreshold and emails <= 5:
 		length += 20
 		emails += 1
 		body = "The A/C has been at least 10 degrees off from it's setpoint for " + str(length) + " minutes. There may be a problem." + " This is notification " + str(emails) + " of 6. <br><br>The setpoint is " + str(targetTemp) + " and the current temperature is " + str(indoorTemp) + "."
@@ -170,14 +357,14 @@ class rubustatDaemon(Daemon):
 
             #heat 
             #it's 72, we want it to be 78, and the error threshold is 5 = this triggers
-            if mailEnabled == True and (mailElapsed > datetime.timedelta(minutes=1)) and (float(targetTemp) - indoorTemp ) > errorThreshold and emails <=5:
+            if mailEnabled == True and (mailElapsed > datetime.timedelta(minutes=20)) and (float(targetTemp) - indoorTemp ) > errorThreshold and emails <=5:
 		length += 20
 		emails += 1
 		body = "The A/C has been at least 10 degrees off from it's setpoint for " + str(length) + " minutes. There may be a problem." + " This is notification " + str(emails) + " of 6. <br><br>The setpoint is " + str(targetTemp) + " and the current temperature is " + str(indoorTemp) + "."
 		if emails == 6:
 		    body = "The A/C has been at least 10 degrees off from it's setpoint for " + str(length) + " minutes. There may be a problem." + " This is notification " + str(emails) + " of 6. No more mail will be sent. Check http://THERMOSTAT-ADDRESS for updates. <br><br>The setpoint is " + str(targetTemp) + " and the current temperature is " + str(indoorTemp) + "."
 		
-		self.sendErrorMail()
+		self.sendErrorMail(body)
                 lastMail = datetime.datetime.now()
                 if DEBUG == 1:
                     log = open("logs/debug_" + datetime.datetime.now().strftime('%Y%m%d') + ".log", "a")

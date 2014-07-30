@@ -22,11 +22,15 @@ FAN_PIN =
 [mail]
 enabled = False
 
+#additional mail config (servers and such) is done in mailconf.txt
+
 #how many degrees the indoor temperature can stray from the target
 #before sending alert email
 errorThreshold = 
 
-#additional mail config (servers and such) is done in mailconf.txt
+#daily scheduling
+[schedule]
+enabled = False
 
 [sqlite]
 enabled = False
