@@ -16,7 +16,7 @@ means ***BIG NUMBERS!***
 I would LOVE if you [threw me an email](mailto:rubustatcontact@wyattwinters.com) if you decide to use any of this code for your own RPi-based thermostat.
 It doesn't have to be long or involved, but knowing my work is used outside of my house would be great!
 
-* You can go ahead and [email me too](mailto:andrewneisch@gmail.com) if you have any questions about scheduling, gps or any features to come as Wyatt has suspended devlopment for now. 
+* You can go ahead and [email me](mailto:andrewneisch@gmail.com) (Andrew) if you have any questions about scheduling, gps or any features to come as [Wyatt](mailto:rubustatcontact@wyattwinters.com) has suspended devlopment for now. 
 
 ##Pictures!
 
