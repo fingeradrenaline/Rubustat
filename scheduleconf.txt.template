@@ -9,11 +9,6 @@
 #day_on_hour = 23
 #day_on_minute = 59
 
-#Temp during cool period
-on_temp = 
-
-#Temp during warm period
-off_temp = 
 
 monday_off_hour = 
 monday_off_minute = 
