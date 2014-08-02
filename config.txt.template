@@ -1,7 +1,7 @@
 [main]
 
 #No quotes are necessary for any values here.
-
+#Expected values are True or False for enabled = 
 #dictates logging
 DEBUG = 0
 
