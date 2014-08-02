@@ -25,7 +25,7 @@ HEATER_PIN = int(config.get('main','HEATER_PIN'))
 AC_PIN = int(config.get('main','AC_PIN'))
 FAN_PIN = int(config.get('main','FAN_PIN'))
 weatherEnabled = config.getboolean('weather','enabled')
-username2 =config.get('authentication','username')
+username2 = config.get('authentication','username')
 password2 = config.get('authentication','password')
 
 
