@@ -2,6 +2,7 @@
 
 #No quotes are necessary for any values here.
 #Expected values are True or False for enabled = 
+
 #dictates logging
 DEBUG = 0
 
@@ -45,8 +46,9 @@ enabled =
 #if you want external weather data on the web UI
 [weather]
 enabled = 
+
 #your zip/postal code. No idea if this works outside the US.
-ZIP = 77840
+ZIP = 
 
 [authentication]
 #Manually comment out line 103 + 136 of rubustat_web_interface.py to disable.
