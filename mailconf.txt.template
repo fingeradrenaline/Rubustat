@@ -1,9 +1,10 @@
 [mailconf]
+#No quotes are necessary for any values here.
+
 SMTP_SERVER = 
-SMTP_PORT =
+SMTP_PORT = 
 username = 
 password = 
 sender = 
-recipient = 
-subject = 
-body =  
+roommate_1_mail = 
+roommate_2_mail = 

@@ -1,5 +1,7 @@
 [main]
 
+#No quotes are necessary for any values here.
+
 #dictates logging
 DEBUG = 0
 
@@ -18,11 +20,13 @@ HEATER_PIN =
 AC_PIN = 
 FAN_PIN = 
 
-#mail notifications to alert to potential hardware problems
-[mail]
-enabled = False
+on_temp = 
+off_temp = 
 
+#mail notifications to alert to potential hardware problems
 #additional mail config (servers and such) is done in mailconf.txt
+[mail]
+enabled = 
 
 #how many degrees the indoor temperature can stray from the target
 #before sending alert email
@@ -30,13 +34,21 @@ errorThreshold =
 
 #daily scheduling
 [schedule]
-enabled = False
+enabled = 
+
+[gps]
+enabled = 
 
 [sqlite]
-enabled = False
+enabled = 
 
 #if you want external weather data on the web UI
 [weather]
-enabled = False
+enabled = 
 #your zip/postal code. No idea if this works outside the US.
-ZIP = 
+ZIP = 77840
+
+[authentication]
+#Manually comment out line 103 + 136 of rubustat_web_interface.py to disable.
+username =
+password = 

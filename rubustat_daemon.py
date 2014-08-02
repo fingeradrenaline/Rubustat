@@ -7,10 +7,11 @@ import time
 import RPi.GPIO as GPIO
 import datetime
 import ConfigParser
+import feedparser
+import imaplib
 
 from daemon import Daemon
 from getIndoorTemp import getIndoorTemp
-
 #set working directory to where "rubustat_daemon.py" is
 abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
@@ -25,14 +26,18 @@ inactive_hysteresis = float(config.get('main','inactive_hysteresis'))
 HEATER_PIN = int(config.get('main','HEATER_PIN'))
 AC_PIN = int(config.get('main','AC_PIN'))
 FAN_PIN = int(config.get('main','FAN_PIN'))
+on_temp = config.get('main','on_temp')
+off_temp = config.get('main','off_temp')
 
 sqliteEnabled = config.getboolean('sqlite','enabled')
 if sqliteEnabled == True:
     import sqlite3
 
+
 #mail config
 mailEnabled = config.getboolean('mail', 'enabled')
-
+#gps config
+gpsEnabled = config.getboolean('gps','enabled')
 
 if mailEnabled == True:
     import smtplib
@@ -43,21 +48,18 @@ if mailEnabled == True:
     username = config.get('mailconf','username')
     password = config.get('mailconf','password')
     sender = config.get('mailconf','sender')
-    recipient = config.get('mailconf','recipient')
-    subject = config.get('mailconf','subject')
-    #body = config.get('mailconf','body')
     errorThreshold = float(config.get('mail','errorThreshold'))
+    roommate_1_mail = config.get('mailconf','roommate_1_mail')
+    roommate_2_mail = config.get('mailconf','roommate_2_mail')
 
 #schedule config
 scheduleEnabled = config.getboolean('schedule', 'enabled')
 
-
 if scheduleEnabled == True:
-
     config.read("scheduleconf.txt")
-    on_temp = config.get('scheduleconf','on_temp')
-    off_temp = config.get('scheduleconf','off_temp')
     now = datetime.datetime.now()
+    
+    #Read schedule config file and define on and off times per day
     
     monday_off_hour = config.get('scheduleconf','monday_off_hour')
     monday_off_minute = config.get('scheduleconf','monday_off_minute')
@@ -110,7 +112,7 @@ if scheduleEnabled == True:
 
 
 class rubustatDaemon(Daemon):
-
+    
     def configureGPIO(self):
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(HEATER_PIN, GPIO.OUT)
@@ -164,11 +166,11 @@ class rubustatDaemon(Daemon):
         GPIO.output(AC_PIN, False)
         GPIO.output(FAN_PIN, False)
         #delay to preserve compressor
-        time.sleep(360)
+        time.sleep(60)
         return 0
 
     if mailEnabled == True:
-        def sendErrorMail(self, body):
+        def sendErrorMail(self, subject, body, recipient):
             headers = ["From: " + sender,
                        "Subject: " + subject,
                        "To: " + recipient,
@@ -187,130 +189,108 @@ class rubustatDaemon(Daemon):
 
     if scheduleEnabled == True:
 	def schedule_change(self, scheduled):
+	    #Read contents of status file
+	    f = open("status", "r")
+	    targetTemp = f.readline().strip()
+	    mode = f.readline()
+	    f.close()
+	    #if the current time is within the scheduled on-period, update status file setTemp = on_temp
+	    if scheduled == True:
+		f = open("status", "w")
+		f.write(on_temp + "\n" + mode)
+		f.close()
+
+	    #if the current time is within the scheduled off-period, update status file setTemp = off_temp
+	    if scheduled == False:
+		f = open("status", "w")
+		f.write(off_temp + "\n" + mode)
+		f.close()	    
+
+	def check_schedule(self):
+	    now = datetime.datetime.now()
+	    day_of_week = datetime.date.today().weekday() # 0 is Monday, 6 is Sunday
+	    if day_of_week == 0:
+		if now < monday_off:
+		    scheduled = True
+		elif now > monday_off and now < monday_on:
+		    scheduled = False
+		elif now > monday_on:
+		    scheduled = True
+	    elif day_of_week == 1:
+		if now < tuesday_off:
+		    scheduled = True
+		elif now > tuesday_off and now < tuesday_on:
+		    scheduled = False
+		elif now > tuesday_on:
+		    scheduled = True
+	    elif day_of_week == 2:
+		if now < wednesday_off:
+		    scheduled = True
+		elif now > wednesday_off and now < wednesday_on:
+		    scheduled = False
+		elif now > wednesday_on:
+		    scheduled = True  
+	    elif day_of_week == 3:
+		if now < thursday_off:
+		    scheduled = True
+		elif now > thursday_off and now < thursday_on:
+		    scheduled = False
+		elif now > thursday_on:
+		    scheduled = True
+	    elif day_of_week == 4:
+		if now < friday_off:
+		    scheduled = True
+		elif now > friday_off and now < friday_on:
+		    scheduled = False
+		elif now > friday_on:
+		    scheduled = True
+	    elif day_of_week == 5:
+		if now < saturday_off:
+		    scheduled = True
+		elif now > saturday_off and now < saturday_on:
+		    scheduled = False
+		elif now > saturday_on:
+		    scheduled = True
+	    elif day_of_week == 6:
+		if now < sunday_off:
+		    scheduled = True
+		elif now > sunday_off and now < sunday_on:
+		    scheduled = False
+		elif now > sunday_on:
+		    scheduled = True
+		
+
+	    self.schedule_change(scheduled)
+
+  
+
+    if gpsEnabled == True:
+	def gps_change(self, scheduled):
 	    #Reads contents of status file
 	    f = open("status", "r")
 	    targetTemp = f.readline().strip()
 	    mode = f.readline()
 	    f.close()
+	
 	    #if the current time is within the scheduled on-period
 	    if scheduled == True:
 		f = open("status", "w")
 		f.write(on_temp + "\n" + mode)
 		f.close()
+		targetTemp = on_temp
+
 	    #if the current time is within the scheduled off-period
 	    if scheduled == False:
 		f = open("status", "w")
 		f.write(off_temp + "\n" + mode)
 		f.close()
-	    
+		targetTemp = off_temp
 
-	def check_schedule(self):
-	    now = datetime.datetime.now()
-	    day_of_week = datetime.date.today().weekday() # 0 is Monday, 6 is Sunday
-	    
-	    #wow this is ugly
-	    #If there is a problem, defaults to off_temp
-	    #Ignore all the comments, they're for bug squashing
-	    if day_of_week == 0:
-		if now < monday_off:
-		    #body = "Off: " +  str(monday_off) + "<br>On: " + str(monday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>Before Off <br>Temp:" + on_temp
-		    scheduled = True
-		    #self.sendErrorMail(body)
-		elif now > monday_off and now < monday_on:
-		    #body = "Off: " +  str(monday_off) + "<br>On: " + str(monday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>Before On <br>Temp:" + off_temp
-		    scheduled = False
-		    #self.sendErrorMail(body)
-		elif now > monday_on:
-		    #body = "Off: " +  str(monday_off) + "<br>On: " + str(monday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>After On <br>Temp:" + on_temp
-		    scheduled = True
-		    #self.sendErrorMail(body)
-	    
-	    elif day_of_week == 1:
-		if now < tuesday_off:
-		    #body = "Off: " +  str(tuesday_off) + "<br>On: " + str(tuesday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>Before Off <br>Temp:" + on_temp
-		    scheduled = True
-		    #self.sendErrorMail(body)
-		elif now > tuesday_off and now < tuesday_on:
-		    #body = "Off: " +  str(tuesday_off) + "<br>On: " + str(tuesday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>Before On <br>Temp:" + off_temp
-		    scheduled = False
-		    #self.sendErrorMail(body)
-		elif now > tuesday_on:
-		    #body = "Off: " +  str(tuesday_off) + "<br>On: " + str(tuesday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>After On <br>Temp:" + on_temp
-		    scheduled = True
-		    #self.sendErrorMail(body)
-		
-	    elif day_of_week == 2:
-		if now < wednesday_off:
-		    #body = "Off: " +  str(wednesday_off) + "<br>On: " + str(wednesday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>Before Off <br>Temp:" + on_temp
-		    scheduled = True
-		    #self.sendErrorMail(body)
-		elif now > wednesday_off and now < wednesday_on:
-		    #body = "Off: " +  str(wednesday_off) + "<br>On: " + str(wednesday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>Before On <br>Temp:" + off_temp
-		    scheduled = False
-		    #self.sendErrorMail(body)
-		elif now > wednesday_on:
-		    #body = "Off: " +  str(wednesday_off) + "<br>On: " + str(wednesday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>After On <br>Temp:" + on_temp
-		    scheduled = True
-		    #self.sendErrorMail(body)
-		    
-	    elif day_of_week == 3:
-		if now < thursday_off:
-		    #body = "Off: " +  str(thursday_off) + "<br>On: " + str(thursday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>Before Off <br>Temp:" + on_temp
-		    scheduled = True
-		    #self.sendErrorMail(body)
-		elif now > thursday_off and now < thursday_on:
-		    #body = "Off: " +  str(thursday_off) + "<br>On: " + str(thursday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>Before On <br>Temp:" + off_temp
-		    scheduled = False
-		    #self.sendErrorMail(body)
-		elif now > thursday_on:
-		    #body = "Off: " +  str(thursday_off) + "<br>On: " + str(thursday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>After On <br>Temp:" + on_temp
-		    scheduled = True
-		    #self.sendErrorMail(body)
-		    
-	    elif day_of_week == 4:
-		if now < friday_off:
-		    #body = "Off: " +  str(friday_off) + "<br>On: " + str(friday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>Before Off <br>Temp:" + on_temp
-		    scheduled = True
-		    #self.sendErrorMail(body)
-		elif now > friday_off and now < friday_on:
-		    #body = "Off: " +  str(friday_off) + "<br>On: " + str(friday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>Before On <br>Temp:" + off_temp
-		    scheduled = False
-		    #self.sendErrorMail(body)
-		elif now > friday_on:
-		    #body = "Off: " +  str(friday_off) + "<br>On: " + str(friday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>After On <br>Temp:" + on_temp
-		    scheduled = True
-		    #self.sendErrorMail(body)
-		    
-	    elif day_of_week == 5:
-		if now < saturday_off:
-		    #body = "Off: " +  str(saturday_off) + "<br>On: " + str(saturday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>Before Off <br>Temp:" + on_temp
-		    scheduled = True
-		    #self.sendErrorMail(body)
-		elif now > saturday_off and now < saturday_on:
-		    #body = "Off: " +  str(saturday_off) + "<br>On: " + str(saturday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>Before On <br>Temp:" + off_temp
-		    scheduled = False
-		    #self.sendErrorMail(body)
-		elif now > saturday_on:
-		    #body = "Off: " +  str(saturday_off) + "<br>On: " + str(saturday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>After On <br>Temp:" + on_temp
-		    scheduled = True
-		    #self.sendErrorMail(body)
-		    
-	    elif day_of_week == 6:
-		if now < sunday_off:
-		    #body = "Off: " +  str(sunday_off) + "<br>On: " + str(sunday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>Before Off <br>Temp:" + on_temp
-		    scheduled = True
-		    #self.sendErrorMail(body)
-		elif now > sunday_off and now < sunday_on:
-		    #body = "Off: " +  str(sunday_off) + "<br>On: " + str(sunday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>Before On <br>Temp:" + off_temp
-		    scheduled = False
-		    #self.sendErrorMail(body)
-		elif now > sunday_on:
-		    #body = "Off: " +  str(sunday_off) + "<br>On: " + str(sunday_on) + "<br>Now: " + str(now) + "<br>Day: " + str(day_of_week) + "<br>After On <br>Temp:" + on_temp
-		    scheduled = True
-		    #self.sendErrorMail(body)
-		
+	    else: 
+	        f = open("status", "w")
+		f.write(targetTemp + "\n" + mode)
+		f.close()
 
-	    self.schedule_change(scheduled)
 
     def run(self):
         lastLog = datetime.datetime.now()
@@ -318,8 +298,10 @@ class rubustatDaemon(Daemon):
         self.configureGPIO()
 	emails = 0
 	length = 0
-        while True:
+	roommate1 = "gone"
+	roommate2 = "gone"
 
+        while True:
             #change cwd to wherever rubustat_daemon is
             abspath = os.path.abspath(__file__)
             dname = os.path.dirname(abspath)
@@ -332,44 +314,145 @@ class rubustatDaemon(Daemon):
             targetTemp = float(file.readline())
             mode = file.readline()
             file.close()
-
             now = datetime.datetime.now()
             logElapsed = now - lastLog
             mailElapsed = now - lastMail
-	    self.check_schedule()
-	
+
+	    if scheduleEnabled == True:
+		self.check_schedule()
+
+	    if gpsEnabled == True:
+		#USERNAME1 = "raspberrypithermostat@gmail.com"
+		#PASSWORD1 = "asn650116"
+		response = feedparser.parse("https://" + username + ":" + password + "@mail.google.com/gmail/feed/atom")
+		unread_count = int(response["feed"]["fullcount"])
+		scheduled = ""
+		
+		#If there's messages, let's do something.
+		if unread_count != 0:
+		    for i in range(0,unread_count):
+			if response['items'][i].title == "roommate1 exited":
+			    roommate1 = "gone"
+			elif response['items'][i].title == "roommate1 entered":
+			    roommate1 = "here"
+			elif response['items'][i].title == "roommate2 exited":
+			    roommate2 = "gone"    
+			elif response['items'][i].title == "roommate2 entered":
+			    roommate2 = "here"
+
+			if response['items'][i].title == "roommate2 entered" and roommate1 == "gone":
+			    subject = "Turn down for what? Oh.. You're on you way home. Ok. Turning down."
+			    body = "The A/C has been turned down to " + str(on_temp) + ". It is currently " + str(indoorTemp) + " in the house."
+			    recipient = roommate_2_mail
+			    self.sendErrorMail(subject, body, recipient)
+			elif response['items'][i].title == "roommate2 exited" and roommate1 == "here":
+			    subject = "C U soon sucka"
+			    body = "The A/C will be turned down to " + str(on_temp) + " when Andrew leaves. It is currently " + str(indoorTemp) + " in the house."
+			    recipient = roommate_2_mail
+			    self.sendErrorMail(subject, body, recipient)
+			elif response['items'][i].title == "roommate2 exited" and roommate1 == "gone":
+			    subject = "It's getting hot in here.... (I'll spare you the rest)"
+			    body = "The A/C has been turned up to " + str(off_temp) + ". It is currently " + str(indoorTemp) + " in the house."
+			    recipient = roommate_2_mail
+			    self.sendErrorMail(subject, body, recipient)
+			elif response['items'][i].title == "roommate1 entered" and roommate2 == "gone":
+			    subject = "I can hardly wait till you walk in the door!!"
+			    body = "The A/C has been turned down to " + str(on_temp) + ". It is currently " + str(indoorTemp) + " in the house."
+			    recipient = roommate_1_mail
+			    self.sendErrorMail(subject, body, recipient)
+			elif response['items'][i].title == "roommate1 exited" and roommate2 == "here":
+			    subject = "OKKKKK BYEEEEE"
+			    body = "The A/C will be turned up to " + str(off_temp) + " when Mikey leaves. It is currently " + str(indoorTemp) + " in the house."
+			    recipient = roommate_1_mail
+			    self.sendErrorMail(subject, body, recipient)
+			elif response['items'][i].title == "roommate1 exited" and roommate2 == "gone":
+			    subject = "OKKKKK BYEEEEE"
+			    body = "The A/C has been turned up to " + str(off_temp) + ". It is currently " + str(indoorTemp) + " in the house."
+			    recipient = roommate_1_mail
+			    self.sendErrorMail(subject, body, recipient)
+
+			#We've processed the message, now let's mark it as read so we don't act on it again
+			if unread_count != 0:
+			    obj = imaplib.IMAP4_SSL('imap.gmail.com', '993')
+			    obj.login(username, password)
+			    obj.select('Inbox')
+			    typ ,data = obj.search(None,'UnSeen')
+			    obj.store(data[0].replace(' ',','),'+FLAGS','\Seen')
+
+			if roommate1 == "gone" and roommate2 == "gone":
+			    scheduled = False
+			elif roommate1 == "here" and roommate2 == "gone":
+			    scheduled = True
+			elif roommate1 == "gone" and roommate2 == "here":
+			    schedule = True
+			elif roommate1 == "here" and roommate2 == "here":
+			    scheduled = True
+
+		    self.gps_change(scheduled)
+
+
             ### check if we need to send error mail
             #cooling 
             #it's 78, we want it to be 72, and the error threshold is 5 = this triggers
-            if mailEnabled == True and (mailElapsed > datetime.timedelta(minutes=20)) and (indoorTemp - float(targetTemp) ) > errorThreshold and emails <= 5:
-		length += 20
-		emails += 1
-		body = "The A/C has been at least 10 degrees off from it's setpoint for " + str(length) + " minutes. There may be a problem." + " This is notification " + str(emails) + " of 6. <br><br>The setpoint is " + str(targetTemp) + " and the current temperature is " + str(indoorTemp) + "."
-		if emails == 6:
-		    body = "The A/C has been at least 10 degrees off from it's setpoint for " + str(length) + " minutes. There may be a problem." + " This is notification " + str(emails) + " of 6. No more mail will be sent. Check http://THERMOSTAT-ADDRESS for updates. <br><br>The setpoint is " + str(targetTemp) + " and the current temperature is " + str(indoorTemp) + "."
-		self.sendErrorMail(body)
-    
-                lastMail = datetime.datetime.now()
-                if DEBUG == 1:
-                    log = open("logs/debug_" + datetime.datetime.now().strftime('%Y%m%d') + ".log", "a")
-                    log.write("MAIL: Sent mail to " + recipient + " at " + time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()) + "\n")
-                    log.close()
+
+	    if mode == "cool":
+		if mailEnabled == True and (mailElapsed > datetime.timedelta(minutes=20)) and (indoorTemp - float(targetTemp) ) > errorThreshold and emails <= 5:
+		    length += 20
+		    emails += 1
+		    body = "The A/C has been at least " + str(errorThreshold) + " degrees off from it's setpoint for " + str(length) + " minutes. There may be a problem." + " This is notification " + str(emails) + " of 6. <br><br>The setpoint is " + str(targetTemp) + " and the current temperature is " + str(indoorTemp) + "."
+		    subject = "There is a problem with the A/C"
+		    recipient = roommate_1_mail
+		    self.sendErrorMail(subject, body, recipient)
+		    recipient = roommate_2_mail
+		    self.sendErrorMail(subject, body, recipient)
+		    if emails == 6:
+			body = "The A/C has been at least " + str(errorThreshold) + " degrees off from it's setpoint for " + str(length) + " minutes. There may be a problem." + " This is notification " + str(emails) + " of 6. No more mail will be sent. Check http://thermostat.aneis.ch for updates. <br><br>The setpoint is " + str(targetTemp) + " and the current temperature is " + str(indoorTemp) + "."
+			subject = "This is the last you'll hear from me..."
+			recipient = roommate_1_mail
+			self.sendErrorMail(subject, body, recipient)
+			#Just reset the recipient and send with same body and subject instead on concatinating emails
+			recipient = roommate_2_mail
+			self.sendErrorMail(subject, body, recipient)  
+		    lastMail = datetime.datetime.now()
+
+		    if DEBUG == 1:
+			log = open("logs/debug_" + datetime.datetime.now().strftime('%Y%m%d') + ".log", "a")
+			log.write("MAIL: Sent mail to " + recipient + " at " + time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()) + "\n")
+			log.close()
+
+		if mailEnabled == True and (indoorTemp - float(targetTemp) ) < errorThreshold:
+		    emails = 0
+		    length = 0
 
             #heat 
             #it's 72, we want it to be 78, and the error threshold is 5 = this triggers
-            if mailEnabled == True and (mailElapsed > datetime.timedelta(minutes=20)) and (float(targetTemp) - indoorTemp ) > errorThreshold and emails <=5:
-		length += 20
-		emails += 1
-		body = "The A/C has been at least 10 degrees off from it's setpoint for " + str(length) + " minutes. There may be a problem." + " This is notification " + str(emails) + " of 6. <br><br>The setpoint is " + str(targetTemp) + " and the current temperature is " + str(indoorTemp) + "."
-		if emails == 6:
-		    body = "The A/C has been at least 10 degrees off from it's setpoint for " + str(length) + " minutes. There may be a problem." + " This is notification " + str(emails) + " of 6. No more mail will be sent. Check http://THERMOSTAT-ADDRESS for updates. <br><br>The setpoint is " + str(targetTemp) + " and the current temperature is " + str(indoorTemp) + "."
-		
-		self.sendErrorMail(body)
-                lastMail = datetime.datetime.now()
-                if DEBUG == 1:
-                    log = open("logs/debug_" + datetime.datetime.now().strftime('%Y%m%d') + ".log", "a")
-                    log.write("MAIL: Sent mail to " + recipient + " at " + time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()) + "\n")
-                    log.close()
+            elif mode == "heat":
+		if mailEnabled == True and (mailElapsed > datetime.timedelta(minutes=20)) and (float(targetTemp) - indoorTemp ) > errorThreshold and emails <=5:
+		    length += 20
+		    emails += 1
+		    body = "The A/C has been at least " + str(errorThreshold) + " degrees off from it's setpoint for " + str(length) + " minutes. There may be a problem." + " This is notification " + str(emails) + " of 6. <br><br>The setpoint is " + str(targetTemp) + " and the current temperature is " + str(indoorTemp) + "."
+		    subject = "There is a problem with the A/C"
+		    recipient = roommate_1_mail
+		    self.sendErrorMail(subject, body, recipient)
+		    #Just reset the recipient and send with same body and subject instead on concatinating emails
+		    recipient = roommate_2_mail
+		    self.sendErrorMail(subject, body, recipient)
+		    if emails == 6:
+			body = "The A/C has been at least " + str(errorThreshold) + " degrees off from it's setpoint for " + str(length) + " minutes. There may be a problem." + " This is notification " + str(emails) + " of 6. No more mail will be sent. Check http://thermostat.aneis.ch for updates. <br><br>The setpoint is " + str(targetTemp) + " and the current temperature is " + str(indoorTemp) + "."
+			recipient = roommate_1_mail
+			self.sendErrorMail(subject, body, recipient)
+			recipient = roommate_2_mail
+			self.sendErrorMail(subject, body, recipient)  
+		    lastMail = datetime.datetime.now()
+		    
+		    if DEBUG == 1:
+			log = open("logs/debug_" + datetime.datetime.now().strftime('%Y%m%d') + ".log", "a")
+			log.write("MAIL: Sent mail to " + recipient + " at " + time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()) + "\n")
+			log.close()
+
+		if mailEnabled == True and (float(targetTemp) - indoorTemp ) < errorThreshold:
+		    emails = 0
+		    length = 0
 
 
             #logging actual temp and indoor temp to sqlite database.
@@ -379,7 +462,7 @@ class rubustatDaemon(Daemon):
                 conn.commit()
                 lastLog = datetime.datetime.now()
 
-                
+
             # heater mode
             if mode == "heat":
                 if hvacState == 0: #idle
@@ -461,8 +544,11 @@ class rubustatDaemon(Daemon):
                 log.write("heatStatus = " + str(heatStatus) + "\n")
                 log.write("coolStatus = " + str(coolStatus)+ "\n")
                 log.write("fanStatus = " + str(fanStatus)+ "\n")
+		#Who is home?
+		log.write("roommateStatus = roommate2: " + str(roommate2) + " roommate1: " + str(roommate1) +"\n")
+
                 log.close()
-            
+
             time.sleep(5)
 
 

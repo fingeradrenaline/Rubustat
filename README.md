@@ -16,6 +16,8 @@ means ***BIG NUMBERS!***
 I would LOVE if you [threw me an email](mailto:rubustatcontact@wyattwinters.com) if you decide to use any of this code for your own RPi-based thermostat.
 It doesn't have to be long or involved, but knowing my work is used outside of my house would be great!
 
+* You can go ahead and [email me too](mailto:andrewneisch@gmail.com) if you have any questions about scheduling, gps or any features to come as Wyatt has suspended devlopment for now. 
+
 ##Pictures!
 
 There's a picture of my hardware, and screenshots of the UI on desktop and mobile browsers over on [my blog](http://wyattwinters.com/rubustat-the-raspberry-pi-thermostat.html).
@@ -36,6 +38,8 @@ There's a picture of my hardware, and screenshots of the UI on desktop and mobil
 ###Optional (required if enabled in config.txt)
 * sqlite for less-sloppy logging (sudo apt-get install python-sqlite sqlite3)
 * pywapi for weather info (sudo pip install pywapi)
+* To use the GPS function, create an [IFTTT](https://ifttt.com/recipes/193115-rubustat-gps-thermostat) recipe to email the pi when you enter or exit your border. IFTTT isn't the only option, there are many services that can be configured trigger an action based on location. You might have to get creative.
+* Requires GMAIL (free) account for the pi to send and receive emails. 
 
 ##Installation
 
@@ -64,10 +68,11 @@ before the web interface call because it was throwing fits without the pre-call 
 #####The configs
 * config.txt.template - the main config file, heavily commented to help you make sense of it. Enable optional features here!
 * mailconf.txt.template - a template for the mail configuration. Fill in the values, enable mail in config.txt, and 
-  get helpful error email alerts! These are used to hopefully inform you of potential hardware issues. This is from when
+  get helpful error email alerts/status updates/sarcastic messages. These are used to hopefully inform you of potential hardware issues. This is from when
   one of my alligator clips fell off, and it was really hot when I got home.
 * status - target temperature (in degrees F, because I'm an awful American) and mode (cool or heat) - this can be edited by hand,
   or via the web UI
+* scheduleconfig.txt.template - Used to set schedule for automatic A/C control
 
   
 #####The code

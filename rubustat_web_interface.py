@@ -25,17 +25,19 @@ HEATER_PIN = int(config.get('main','HEATER_PIN'))
 AC_PIN = int(config.get('main','AC_PIN'))
 FAN_PIN = int(config.get('main','FAN_PIN'))
 weatherEnabled = config.getboolean('weather','enabled')
+username =config.getboolean('authentication','username')
+password = config.getboolean('authentication','password')
+
 
 #start the daemon in the background
 subprocess.Popen("/usr/bin/python rubustat_daemon.py start", shell=True)
-
 
 
 def check_auth(username, password):
     """This function is called to check if a username /
     password combination is valid.
     """
-    return username == 'admin' and password == 'secret'
+    return username2 == username and password2 == password
 
 def authenticate():
     """Sends a 401 response that enables basic auth"""
@@ -48,7 +50,7 @@ def requires_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         auth = request.authorization
-        if not auth or not check_auth(auth.username, auth.password):
+        if not auth or not check_auth(auth.username2, auth.password2):
             return authenticate()
         return f(*args, **kwargs)
     return decorated
@@ -93,6 +95,8 @@ def getDaemonStatus():
                 return "<p id=\"daemonRunning\"> Daemon is running. </p>"
             except OSError:
                 return "<p id=\"daemonNotRunning\"> DAEMON IS NOT RUNNING. </p>"
+                
+
     except IOError:
         return "<p id=\"daemonNotRunning\"> DAEMON IS NOT RUNNING. </p>"
 

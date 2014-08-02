@@ -1,6 +1,8 @@
 [scheduleconf]
 #24 hour format for hours
 #No leading zeros
+#Quotes are not necessary
+
 #If you want always on, set format as follows:
 #day_off_hour = 23
 #day_off_minute = 58
@@ -8,12 +10,11 @@
 #day_on_minute = 59
 
 #Temp during cool period
-on_temp = 74
+on_temp = 
 
 #Temp during warm period
-off_temp = 82
+off_temp = 
 
-#Assumes running all night. 
 monday_off_hour = 
 monday_off_minute = 
 monday_on_hour = 
