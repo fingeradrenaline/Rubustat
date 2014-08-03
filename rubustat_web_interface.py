@@ -25,7 +25,7 @@ HEATER_PIN = int(config.get('main','HEATER_PIN'))
 AC_PIN = int(config.get('main','AC_PIN'))
 FAN_PIN = int(config.get('main','FAN_PIN'))
 weatherEnabled = config.getboolean('weather','enabled')
-username2 = config.get('authentication','username')
+username2 =config.get('authentication','username')
 password2 = config.get('authentication','password')
 
 
@@ -105,8 +105,11 @@ def getDaemonStatus():
 def my_form():
     f = open("status", "r")
     targetTemp = f.readline().strip()
-    mode = f.readline()
+    mode = f.readline().strip()
+    scheduleEnabled = f.readline().strip()
+    gpsEnabled = f.readline().strip()
     f.close()
+
     weatherString = ""
     if weatherEnabled == True:
         try:
@@ -127,9 +130,19 @@ def my_form():
         checked = "checked=\"checked\""
     else:
         checked = "Something broke"
+        
+    if scheduleEnabled == "False":
+        checked2 = ""
+    elif scheduleEnabled == "True":
+        checked2 = "checked=\"checked\""
+    else:
+        checked2 = "Something broke"
+
+        
     return render_template("form.html", targetTemp = targetTemp, \
                                         weatherString = weatherString, \
                                         checked = checked, \
+                                        checked2 = checked2, \
                                         daemonStatus = daemonStatus, \
                                         whatsOn = whatsOn)
 
@@ -139,18 +152,27 @@ def my_form_post():
 
     text = request.form['target']
     mode = "heat"
-
+    scheduleEnabled = "False"
+    gpsEnabled = "False"
+    
     #default mode to heat 
     #cool if the checkbox is returned, it is checked
     #and cool mode has been selected
 
     if 'onoffswitch' in request.form:
         mode = "cool"
+    if 'onoffswitch2' in request.form:
+        scheduleEnabled = "True"
+        gpsEnabled = "False"
+    else:
+        gpsEnabled = "True"
+        scheduleEnabled = "False"
+        
     newTargetTemp = text.upper()
     match = re.search(r'^\d{2}$',newTargetTemp)
     if match:
         f = open("status", "w")
-        f.write(newTargetTemp + "\n" + mode)
+        f.write(newTargetTemp + "\n" + mode + "\n" + scheduleEnabled + "\n" + gpsEnabled)
         f.close()
         flash("New temperature of " + newTargetTemp + " set!")
         return redirect(url_for('my_form'))
@@ -176,7 +198,6 @@ def updateWhatsOn():
 def updateDaemonStatus():
 
     return getDaemonStatus()
-
 
 if __name__ == "__main__":
     app.run("0.0.0.0", port=80)

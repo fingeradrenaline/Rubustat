@@ -15,30 +15,36 @@ monday_off_minute =
 monday_on_hour = 
 monday_on_minute = 
 
+
 tuesday_off_hour = 
 tuesday_off_minute = 
 tuesday_on_hour = 
 tuesday_on_minute = 
+
 
 wednesday_off_hour = 
 wednesday_off_minute = 
 wednesday_on_hour = 
 wednesday_on_minute = 
 
+
 thursday_off_hour = 
 thursday_off_minute = 
 thursday_on_hour = 
 thursday_on_minute = 
+
 
 friday_off_hour = 
 friday_off_minute = 
 friday_on_hour = 
 friday_on_minute = 
 
+
 saturday_off_hour = 
 saturday_off_minute = 
 saturday_on_hour = 
 saturday_on_minute = 
+
 
 sunday_off_hour = 
 sunday_off_minute = 

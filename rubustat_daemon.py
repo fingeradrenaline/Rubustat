@@ -37,7 +37,16 @@ if sqliteEnabled == True:
 #mail config
 mailEnabled = config.getboolean('mail', 'enabled')
 #gps config
-gpsEnabled = config.getboolean('gps','enabled')
+#gpsEnabled = config.getboolean('gps','enabled')
+
+f = open("status", "r")
+targetTemp = f.readline().strip()
+mode = f.readline().strip()
+scheduleEnabled = f.readline().strip()
+gpsEnabled = f.readline().strip()
+f.close()
+
+
 
 if mailEnabled == True:
     import smtplib
@@ -53,62 +62,61 @@ if mailEnabled == True:
     roommate_2_mail = config.get('mailconf','roommate_2_mail')
 
 #schedule config
-scheduleEnabled = config.getboolean('schedule', 'enabled')
+#scheduleEnabled = config.getboolean('schedule', 'enabled')
 
-if scheduleEnabled == True:
-    config.read("scheduleconf.txt")
-    now = datetime.datetime.now()
-    
-    #Read schedule config file and define on and off times per day
-    
-    monday_off_hour = config.get('scheduleconf','monday_off_hour')
-    monday_off_minute = config.get('scheduleconf','monday_off_minute')
-    monday_on_hour = config.get('scheduleconf','monday_on_hour')
-    monday_on_minute = config.get('scheduleconf','monday_on_minute')
-    monday_off = now.replace(hour=int(monday_off_hour), minute=int(monday_off_minute), second=0, microsecond=0)
-    monday_on = now.replace(hour=int(monday_on_hour), minute=int(monday_on_minute), second=0, microsecond=0)
-    
-    tuesday_off_hour = config.get('scheduleconf','tuesday_off_hour')
-    tuesday_off_minute = config.get('scheduleconf','tuesday_off_minute')
-    tuesday_on_hour = config.get('scheduleconf','tuesday_on_hour')
-    tuesday_on_minute = config.get('scheduleconf','tuesday_on_minute')
-    tuesday_off = now.replace(hour=int(tuesday_off_hour), minute=int(tuesday_off_minute), second=0, microsecond=0)
-    tuesday_on = now.replace(hour=int(tuesday_on_hour), minute=int(tuesday_on_minute), second=0, microsecond=0)
-    
-    wednesday_off_hour = config.get('scheduleconf','wednesday_off_hour')
-    wednesday_off_minute = config.get('scheduleconf','wednesday_off_minute')
-    wednesday_on_hour = config.get('scheduleconf','wednesday_on_hour')
-    wednesday_on_minute = config.get('scheduleconf','wednesday_on_minute')
-    wednesday_off = now.replace(hour=int(wednesday_off_hour), minute=int(wednesday_off_minute), second=0, microsecond=0)
-    wednesday_on = now.replace(hour=int(wednesday_on_hour), minute=int(wednesday_on_minute), second=0, microsecond=0)
-    
-    thursday_off_hour = config.get('scheduleconf','thursday_off_hour')
-    thursday_off_minute = config.get('scheduleconf','thursday_off_minute')
-    thursday_on_hour = config.get('scheduleconf','thursday_on_hour')
-    thursday_on_minute = config.get('scheduleconf','thursday_on_minute')
-    thursday_off = now.replace(hour=int(thursday_off_hour), minute=int(thursday_off_minute), second=0, microsecond=0)
-    thursday_on = now.replace(hour=int(thursday_on_hour), minute=int(thursday_on_minute), second=0, microsecond=0)
-    
-    friday_off_hour = config.get('scheduleconf','friday_off_hour')
-    friday_off_minute = config.get('scheduleconf','friday_off_minute')
-    friday_on_hour = config.get('scheduleconf','friday_on_hour')
-    friday_on_minute = config.get('scheduleconf','friday_on_minute')
-    friday_off = now.replace(hour=int(friday_off_hour), minute=int(friday_off_minute), second=0, microsecond=0)
-    friday_on = now.replace(hour=int(friday_on_hour), minute=int(friday_on_minute), second=0, microsecond=0)
-    
-    saturday_off_hour = config.get('scheduleconf','saturday_off_hour')
-    saturday_off_minute = config.get('scheduleconf','saturday_off_minute')
-    saturday_on_hour = config.get('scheduleconf','saturday_on_hour')
-    saturday_on_minute = config.get('scheduleconf','saturday_on_minute')
-    saturday_off = now.replace(hour=int(saturday_off_hour), minute=int(saturday_off_minute), second=0, microsecond=0)
-    saturday_on = now.replace(hour=int(saturday_on_hour), minute=int(saturday_on_minute), second=0, microsecond=0)
-    
-    sunday_off_hour = config.get('scheduleconf','sunday_off_hour')
-    sunday_off_minute = config.get('scheduleconf','sunday_off_minute')
-    sunday_on_hour = config.get('scheduleconf','sunday_on_hour')
-    sunday_on_minute = config.get('scheduleconf','sunday_on_minute')
-    sunday_off = now.replace(hour=int(sunday_off_hour), minute=int(sunday_off_minute), second=0, microsecond=0)
-    sunday_on = now.replace(hour=int(sunday_on_hour), minute=int(sunday_on_minute), second=0, microsecond=0)
+config.read("scheduleconf.txt")
+now = datetime.datetime.now()
+
+#Read schedule config file and define on and off times per day
+
+monday_off_hour = config.get('scheduleconf','monday_off_hour')
+monday_off_minute = config.get('scheduleconf','monday_off_minute')
+monday_on_hour = config.get('scheduleconf','monday_on_hour')
+monday_on_minute = config.get('scheduleconf','monday_on_minute')
+monday_off = now.replace(hour=int(monday_off_hour), minute=int(monday_off_minute), second=0, microsecond=0)
+monday_on = now.replace(hour=int(monday_on_hour), minute=int(monday_on_minute), second=0, microsecond=0)
+
+tuesday_off_hour = config.get('scheduleconf','tuesday_off_hour')
+tuesday_off_minute = config.get('scheduleconf','tuesday_off_minute')
+tuesday_on_hour = config.get('scheduleconf','tuesday_on_hour')
+tuesday_on_minute = config.get('scheduleconf','tuesday_on_minute')
+tuesday_off = now.replace(hour=int(tuesday_off_hour), minute=int(tuesday_off_minute), second=0, microsecond=0)
+tuesday_on = now.replace(hour=int(tuesday_on_hour), minute=int(tuesday_on_minute), second=0, microsecond=0)
+
+wednesday_off_hour = config.get('scheduleconf','wednesday_off_hour')
+wednesday_off_minute = config.get('scheduleconf','wednesday_off_minute')
+wednesday_on_hour = config.get('scheduleconf','wednesday_on_hour')
+wednesday_on_minute = config.get('scheduleconf','wednesday_on_minute')
+wednesday_off = now.replace(hour=int(wednesday_off_hour), minute=int(wednesday_off_minute), second=0, microsecond=0)
+wednesday_on = now.replace(hour=int(wednesday_on_hour), minute=int(wednesday_on_minute), second=0, microsecond=0)
+
+thursday_off_hour = config.get('scheduleconf','thursday_off_hour')
+thursday_off_minute = config.get('scheduleconf','thursday_off_minute')
+thursday_on_hour = config.get('scheduleconf','thursday_on_hour')
+thursday_on_minute = config.get('scheduleconf','thursday_on_minute')
+thursday_off = now.replace(hour=int(thursday_off_hour), minute=int(thursday_off_minute), second=0, microsecond=0)
+thursday_on = now.replace(hour=int(thursday_on_hour), minute=int(thursday_on_minute), second=0, microsecond=0)
+
+friday_off_hour = config.get('scheduleconf','friday_off_hour')
+friday_off_minute = config.get('scheduleconf','friday_off_minute')
+friday_on_hour = config.get('scheduleconf','friday_on_hour')
+friday_on_minute = config.get('scheduleconf','friday_on_minute')
+friday_off = now.replace(hour=int(friday_off_hour), minute=int(friday_off_minute), second=0, microsecond=0)
+friday_on = now.replace(hour=int(friday_on_hour), minute=int(friday_on_minute), second=0, microsecond=0)
+
+saturday_off_hour = config.get('scheduleconf','saturday_off_hour')
+saturday_off_minute = config.get('scheduleconf','saturday_off_minute')
+saturday_on_hour = config.get('scheduleconf','saturday_on_hour')
+saturday_on_minute = config.get('scheduleconf','saturday_on_minute')
+saturday_off = now.replace(hour=int(saturday_off_hour), minute=int(saturday_off_minute), second=0, microsecond=0)
+saturday_on = now.replace(hour=int(saturday_on_hour), minute=int(saturday_on_minute), second=0, microsecond=0)
+
+sunday_off_hour = config.get('scheduleconf','sunday_off_hour')
+sunday_off_minute = config.get('scheduleconf','sunday_off_minute')
+sunday_on_hour = config.get('scheduleconf','sunday_on_hour')
+sunday_on_minute = config.get('scheduleconf','sunday_on_minute')
+sunday_off = now.replace(hour=int(sunday_off_hour), minute=int(sunday_off_minute), second=0, microsecond=0)
+sunday_on = now.replace(hour=int(sunday_on_hour), minute=int(sunday_on_minute), second=0, microsecond=0)
 
 
 class rubustatDaemon(Daemon):
@@ -187,109 +195,110 @@ class rubustatDaemon(Daemon):
             session.sendmail(sender, recipient, headers + "\r\n\r\n" + body)
             session.quit()
 
-    if scheduleEnabled == True:
-	def schedule_change(self, scheduled):
-	    #Read contents of status file
-	    f = open("status", "r")
-	    targetTemp = f.readline().strip()
-	    mode = f.readline()
+
+    def schedule_change(self, scheduled):
+	#Read contents of status file
+	f = open("status", "r")
+	targetTemp = f.readline().strip()
+	mode = f.readline().strip()
+	scheduleEnabled = f.readline().strip()
+	gpsEnabled = f.readline().strip()
+	f.close()
+	#if the current time is within the scheduled on-period, update status file setTemp = on_temp
+	if scheduled == True:
+	    f = open("status", "w")
+	    f.write(on_temp + "\n" + mode + "\n" + scheduleEnabled + "\n" + gpsEnabled)
 	    f.close()
-	    #if the current time is within the scheduled on-period, update status file setTemp = on_temp
-	    if scheduled == True:
-		f = open("status", "w")
-		f.write(on_temp + "\n" + mode)
-		f.close()
 
-	    #if the current time is within the scheduled off-period, update status file setTemp = off_temp
-	    if scheduled == False:
-		f = open("status", "w")
-		f.write(off_temp + "\n" + mode)
-		f.close()	    
+	#if the current time is within the scheduled off-period, update status file setTemp = off_temp
+	if scheduled == False:
+	    f = open("status", "w")
+	    f.write(off_temp + "\n" + mode + "\n" + scheduleEnabled + "\n" + gpsEnabled)
+	    f.close()	    
 
-	def check_schedule(self):
-	    now = datetime.datetime.now()
-	    day_of_week = datetime.date.today().weekday() # 0 is Monday, 6 is Sunday
-	    if day_of_week == 0:
-		if now < monday_off:
-		    scheduled = True
-		elif now > monday_off and now < monday_on:
-		    scheduled = False
-		elif now > monday_on:
-		    scheduled = True
-	    elif day_of_week == 1:
-		if now < tuesday_off:
-		    scheduled = True
-		elif now > tuesday_off and now < tuesday_on:
-		    scheduled = False
-		elif now > tuesday_on:
-		    scheduled = True
-	    elif day_of_week == 2:
-		if now < wednesday_off:
-		    scheduled = True
-		elif now > wednesday_off and now < wednesday_on:
-		    scheduled = False
-		elif now > wednesday_on:
-		    scheduled = True  
-	    elif day_of_week == 3:
-		if now < thursday_off:
-		    scheduled = True
-		elif now > thursday_off and now < thursday_on:
-		    scheduled = False
-		elif now > thursday_on:
-		    scheduled = True
-	    elif day_of_week == 4:
-		if now < friday_off:
-		    scheduled = True
-		elif now > friday_off and now < friday_on:
-		    scheduled = False
-		elif now > friday_on:
-		    scheduled = True
-	    elif day_of_week == 5:
-		if now < saturday_off:
-		    scheduled = True
-		elif now > saturday_off and now < saturday_on:
-		    scheduled = False
-		elif now > saturday_on:
-		    scheduled = True
-	    elif day_of_week == 6:
-		if now < sunday_off:
-		    scheduled = True
-		elif now > sunday_off and now < sunday_on:
-		    scheduled = False
-		elif now > sunday_on:
-		    scheduled = True
-		
+    def check_schedule(self):
+	now = datetime.datetime.now()
+	day_of_week = datetime.date.today().weekday() # 0 is Monday, 6 is Sunday
+	if day_of_week == 0:
+	    if now < monday_off:
+		scheduled = True
+	    elif now > monday_off and now < monday_on:
+		scheduled = False
+	    elif now > monday_on:
+		scheduled = True
+	elif day_of_week == 1:
+	    if now < tuesday_off:
+		scheduled = True
+	    elif now > tuesday_off and now < tuesday_on:
+		scheduled = False
+	    elif now > tuesday_on:
+		scheduled = True
+	elif day_of_week == 2:
+	    if now < wednesday_off:
+		scheduled = True
+	    elif now > wednesday_off and now < wednesday_on:
+		scheduled = False
+	    elif now > wednesday_on:
+		scheduled = True  
+	elif day_of_week == 3:
+	    if now < thursday_off:
+		scheduled = True
+	    elif now > thursday_off and now < thursday_on:
+		scheduled = False
+	    elif now > thursday_on:
+		scheduled = True
+	elif day_of_week == 4:
+	    if now < friday_off:
+		scheduled = True
+	    elif now > friday_off and now < friday_on:
+		scheduled = False
+	    elif now > friday_on:
+		scheduled = True
+	elif day_of_week == 5:
+	    if now < saturday_off:
+		scheduled = True
+	    elif now > saturday_off and now < saturday_on:
+		scheduled = False
+	    elif now > saturday_on:
+		scheduled = True
+	elif day_of_week == 6:
+	    if now < sunday_off:
+		scheduled = True
+	    elif now > sunday_off and now < sunday_on:
+		scheduled = False
+	    elif now > sunday_on:
+		scheduled = True
+	    
 
-	    self.schedule_change(scheduled)
+	self.schedule_change(scheduled)
 
-  
-
-    if gpsEnabled == True:
-	def gps_change(self, scheduled):
-	    #Reads contents of status file
-	    f = open("status", "r")
-	    targetTemp = f.readline().strip()
-	    mode = f.readline()
+    def gps_change(self, scheduled):
+	#Reads contents of status file
+	f = open("status", "r")
+	targetTemp = f.readline().strip()
+	mode = f.readline().strip()
+	scheduleEnabled = f.readline().strip()
+	gpsEnabled = f.readline()
+	f.close()
+    
+	#if the current time is within the scheduled on-period
+	if scheduled == True:
+	    f = open("status", "w")
+	    f.write(on_temp + "\n" + mode + "\n" + scheduleEnabled + "\n" + gpsEnabled)
 	    f.close()
-	
-	    #if the current time is within the scheduled on-period
-	    if scheduled == True:
-		f = open("status", "w")
-		f.write(on_temp + "\n" + mode)
-		f.close()
-		targetTemp = on_temp
+	    targetTemp = on_temp
 
-	    #if the current time is within the scheduled off-period
-	    if scheduled == False:
-		f = open("status", "w")
-		f.write(off_temp + "\n" + mode)
-		f.close()
-		targetTemp = off_temp
+	#if the current time is within the scheduled off-period
+	if scheduled == False:
+	    f = open("status", "w")
+	    f.write(off_temp + "\n" + mode + "\n" + scheduleEnabled + "\n" + gpsEnabled)
+	    f.close()
+	    targetTemp = off_temp
 
-	    else: 
-	        f = open("status", "w")
-		f.write(targetTemp + "\n" + mode)
-		f.close()
+	else: 
+	    f = open("status", "w")
+	    f.write(targetTemp + "\n" + mode + "\n" + scheduleEnabled + "\n" + gpsEnabled)
+	    f.close()
 
 
     def run(self):
@@ -306,24 +315,24 @@ class rubustatDaemon(Daemon):
             abspath = os.path.abspath(__file__)
             dname = os.path.dirname(abspath)
             os.chdir(dname)
-
             indoorTemp = float(getIndoorTemp())
             hvacState = int(self.getHVACState())
 
             file = open("status", "r")
-            targetTemp = float(file.readline())
-            mode = file.readline()
+            targetTemp = float(file.readline().strip())
+            mode = file.readline().strip()
+	    scheduleEnabled = file.readline().strip()
+	    gpsEnabled = file.readline()
             file.close()
+	    
             now = datetime.datetime.now()
             logElapsed = now - lastLog
             mailElapsed = now - lastMail
 
-	    if scheduleEnabled == True:
+	    if scheduleEnabled == "True":
 		self.check_schedule()
-
-	    if gpsEnabled == True:
-		#USERNAME1 = "raspberrypithermostat@gmail.com"
-		#PASSWORD1 = "asn650116"
+		
+	    if gpsEnabled == "True":
 		response = feedparser.parse("https://" + username + ":" + password + "@mail.google.com/gmail/feed/atom")
 		unread_count = int(response["feed"]["fullcount"])
 		scheduled = ""
@@ -344,17 +353,17 @@ class rubustatDaemon(Daemon):
 			    subject = "Turn down for what? Oh.. You're on you way home. Ok. Turning down."
 			    body = "The A/C has been turned down to " + str(on_temp) + ". It is currently " + str(indoorTemp) + " in the house."
 			    recipient = roommate_2_mail
-			    self.sendErrorMail(subject, body, recipient)
+			    #self.sendErrorMail(subject, body, recipient)
 			elif response['items'][i].title == "roommate2 exited" and roommate1 == "here":
 			    subject = "C U soon sucka"
-			    body = "The A/C will be turned down to " + str(on_temp) + " when Andrew leaves. It is currently " + str(indoorTemp) + " in the house."
+			    body = "The A/C will be turned down to " + str(on_temp) + " when Roommate1 leaves. It is currently " + str(indoorTemp) + " in the house."
 			    recipient = roommate_2_mail
-			    self.sendErrorMail(subject, body, recipient)
+			    #self.sendErrorMail(subject, body, recipient)
 			elif response['items'][i].title == "roommate2 exited" and roommate1 == "gone":
 			    subject = "It's getting hot in here.... (I'll spare you the rest)"
 			    body = "The A/C has been turned up to " + str(off_temp) + ". It is currently " + str(indoorTemp) + " in the house."
 			    recipient = roommate_2_mail
-			    self.sendErrorMail(subject, body, recipient)
+			    #self.sendErrorMail(subject, body, recipient)
 			elif response['items'][i].title == "roommate1 entered" and roommate2 == "gone":
 			    subject = "I can hardly wait till you walk in the door!!"
 			    body = "The A/C has been turned down to " + str(on_temp) + ". It is currently " + str(indoorTemp) + " in the house."
