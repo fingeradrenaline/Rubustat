@@ -353,17 +353,17 @@ class rubustatDaemon(Daemon):
 			    subject = "Turn down for what? Oh.. You're on you way home. Ok. Turning down."
 			    body = "The A/C has been turned down to " + str(on_temp) + ". It is currently " + str(indoorTemp) + " in the house."
 			    recipient = roommate_2_mail
-			    #self.sendErrorMail(subject, body, recipient)
+			    self.sendErrorMail(subject, body, recipient)
 			elif response['items'][i].title == "roommate2 exited" and roommate1 == "here":
 			    subject = "C U soon sucka"
 			    body = "The A/C will be turned down to " + str(on_temp) + " when Roommate1 leaves. It is currently " + str(indoorTemp) + " in the house."
 			    recipient = roommate_2_mail
-			    #self.sendErrorMail(subject, body, recipient)
+			    self.sendErrorMail(subject, body, recipient)
 			elif response['items'][i].title == "roommate2 exited" and roommate1 == "gone":
 			    subject = "It's getting hot in here.... (I'll spare you the rest)"
 			    body = "The A/C has been turned up to " + str(off_temp) + ". It is currently " + str(indoorTemp) + " in the house."
 			    recipient = roommate_2_mail
-			    #self.sendErrorMail(subject, body, recipient)
+			    self.sendErrorMail(subject, body, recipient)
 			elif response['items'][i].title == "roommate1 entered" and roommate2 == "gone":
 			    subject = "I can hardly wait till you walk in the door!!"
 			    body = "The A/C has been turned down to " + str(on_temp) + ". It is currently " + str(indoorTemp) + " in the house."
