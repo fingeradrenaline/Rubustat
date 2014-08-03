@@ -168,3 +168,52 @@ margin-left: 0;
 .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
 right: 0px;
 }
+
+/*the crazy switch bit AGAIN!*/
+
+.onoffswitch2 {
+position: relative; width: 125px;
+-webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
+}
+.onoffswitch2-checkbox {
+display: none;
+}
+.onoffswitch2-label {
+display: block; overflow: hidden; cursor: pointer;
+border: 2px solid #999999; border-radius: 49px;
+}
+.onoffswitch2-inner {
+width: 200%; margin-left: -100%;
+-moz-transition: margin 0.3s ease-in 0s; -webkit-transition: margin 0.3s ease-in 0s;
+-o-transition: margin 0.3s ease-in 0s; transition: margin 0.3s ease-in 0s;
+}
+.onoffswitch2-inner:before, .onoffswitch2-inner:after {
+float: left; width: 50%; height: 39px; padding: 0; line-height: 39px;
+font-size: 14px; color: white; font-family: Trebuchet, Arial, sans-serif; font-weight: bold;
+-moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
+}
+.onoffswitch2-inner:before {
+content: "Schedule";
+padding-right: 80px;
+background-color: #2FCCFF; color: #FFFFFF;
+}
+.onoffswitch2-inner:after {
+content: "GPS";
+padding-right: 10px;
+background-color: #2FCCFF; color: #FFFFFF;
+text-align: right;
+}
+.onoffswitch2-switch {
+width: 50px; margin: -5.5px;
+background: #FFFFFF;
+border: 2px solid #999999; border-radius: 49px;
+position: absolute; top: 0; bottom: 0; right: 82px;
+-moz-transition: all 0.3s ease-in 0s; -webkit-transition: all 0.3s ease-in 0s;
+-o-transition: all 0.3s ease-in 0s; transition: all 0.3s ease-in 0s;
+}
+.onoffswitch2-checkbox:checked + .onoffswitch2-label .onoffswitch2-inner {
+margin-left: 0;
+}
+.onoffswitch2-checkbox:checked + .onoffswitch2-label .onoffswitch2-switch {
+right: 0px;
+}

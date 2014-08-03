@@ -1,8 +1,5 @@
 [main]
 
-#No quotes are necessary for any values here.
-#Expected values are True or False for enabled = 
-
 #dictates logging
 DEBUG = 0
 
@@ -33,13 +30,6 @@ enabled =
 #before sending alert email
 errorThreshold = 
 
-#daily scheduling
-[schedule]
-enabled = 
-
-[gps]
-enabled = 
-
 [sqlite]
 enabled = 
 
@@ -52,5 +42,5 @@ ZIP =
 
 [authentication]
 #Manually comment out line 103 + 136 of rubustat_web_interface.py to disable.
-username =
+username = 
 password = 

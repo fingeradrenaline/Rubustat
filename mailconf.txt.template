@@ -1,6 +1,4 @@
 [mailconf]
-#No quotes are necessary for any values here.
-
 SMTP_SERVER = 
 SMTP_PORT = 
 username = 
