@@ -34,6 +34,7 @@ There's a picture of my hardware, and screenshots of the UI on desktop and mobil
 * RPi.GPIO (you probably already have it installed on your Pi)
 * Flask (sudo apt-get install python-flask on Ubuntu, Debian, Raspbian, and likely other apt based distros)
 * kernel modules w1-gpio and w1-therm (unsure if these are default in Raspbian, but make sure you have them)
+* Feedparser (sudo pip install feedparser)
 
 ###Optional (required if enabled in config.txt)
 * sqlite for less-sloppy logging (sudo apt-get install python-sqlite sqlite3)
