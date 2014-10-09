@@ -5,7 +5,7 @@ import re
 import ConfigParser
 from functools import wraps
 from flask import request, Response
-
+import smtplib
 from getIndoorTemp import getIndoorTemp
 from flask import Flask, request, session, g, redirect, url_for, \
      abort, render_template, flash, jsonify
@@ -94,10 +94,9 @@ def getDaemonStatus():
                 os.kill(pid, 0)
                 return "<p id=\"daemonRunning\"> Daemon is running. </p>"
             except OSError:
-                return "<p id=\"daemonNotRunning\"> DAEMON IS NOT RUNNING. </p>"
-                
-
+		return "<p id=\"daemonNotRunning\"> DAEMON IS NOT RUNNING. </p>"
     except IOError:
+
         return "<p id=\"daemonNotRunning\"> DAEMON IS NOT RUNNING. </p>"
 
 @app.route('/')

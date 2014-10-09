@@ -174,7 +174,7 @@ class rubustatDaemon(Daemon):
         GPIO.output(AC_PIN, False)
         GPIO.output(FAN_PIN, False)
         #delay to preserve compressor
-        time.sleep(60)
+        time.sleep(360)
         return 0
 
     if mailEnabled == True:
@@ -307,8 +307,8 @@ class rubustatDaemon(Daemon):
         self.configureGPIO()
 	emails = 0
 	length = 0
-	roommate1 = "gone"
-	roommate2 = "gone"
+	roomate_2 = "gone"
+	roomate_1 = "gone"
 
         while True:
             #change cwd to wherever rubustat_daemon is
@@ -331,53 +331,74 @@ class rubustatDaemon(Daemon):
 
 	    if scheduleEnabled == "True":
 		self.check_schedule()
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> FETCH_HEAD
 		
 	    if gpsEnabled == "True":
 		response = feedparser.parse("https://" + username + ":" + password + "@mail.google.com/gmail/feed/atom")
 		unread_count = int(response["feed"]["fullcount"])
 		scheduled = ""
+>>>>>>> FETCH_HEAD
 		
+	    if gpsEnabled == "True":
+		try:
+			response = feedparser.parse("https://" + username + ":" + password + "@mail.google.com/gmail/feed/atom")
+			unread_count = int(response["feed"]["fullcount"])
+			scheduled = ""
+		except:
+			unread_count = 0
+			scheduled = ""
 		#If there's messages, let's do something.
 		if unread_count != 0:
 		    for i in range(0,unread_count):
-			if response['items'][i].title == "roommate1 exited":
-			    roommate1 = "gone"
-			elif response['items'][i].title == "roommate1 entered":
-			    roommate1 = "here"
-			elif response['items'][i].title == "roommate2 exited":
-			    roommate2 = "gone"    
-			elif response['items'][i].title == "roommate2 entered":
-			    roommate2 = "here"
+			if response['items'][i].title == "roomate_2 exited":
+			    roomate_2 = "gone"
+			elif response['items'][i].title == "roomate_2 entered":
+			    roomate_2 = "here"
+			elif response['items'][i].title == "roomate_1 exited":
+			    roomate_1 = "gone"
+			elif response['items'][i].title == "roomate_1 entered":
+			    roomate_1 = "here"
 
-			if response['items'][i].title == "roommate2 entered" and roommate1 == "gone":
-			    subject = "Turn down for what? Oh.. You're on you way home. Ok. Turning down."
-			    body = "The A/C has been turned down to " + str(on_temp) + ". It is currently " + str(indoorTemp) + " in the house."
-			    recipient = roommate_2_mail
+			if response['items'][i].title == "roomate_1 entered" and roomate_2 == "gone":
+			    subject = "Mikey Entered"
+			    body =  "The A/C has been turned down to " + str(on_temp) + ". It is currently " + str(indoorTemp) + " in the house."
+			    recipient = roommate_1_mail
 			    self.sendErrorMail(subject, body, recipient)
+<<<<<<< HEAD
+			elif response['items'][i].title == "roomate_1 exited" and roomate_2 == "here":
+			    subject = "Mikey Exited"
+			    body = "The A/C will be turned up to " + str(off_temp) + " when Roomate_2 leaves. It is currently " + str(indoorTemp) + " in the house."
+			    recipient = roommate_1_mail
+=======
 			elif response['items'][i].title == "roommate2 exited" and roommate1 == "here":
 			    subject = "C U soon sucka"
 			    body = "The A/C will be turned down to " + str(on_temp) + " when Roommate1 leaves. It is currently " + str(indoorTemp) + " in the house."
 			    recipient = roommate_2_mail
+>>>>>>> FETCH_HEAD
 			    self.sendErrorMail(subject, body, recipient)
-			elif response['items'][i].title == "roommate2 exited" and roommate1 == "gone":
-			    subject = "It's getting hot in here.... (I'll spare you the rest)"
+			elif response['items'][i].title == "roomate_1 exited" and roomate_2 == "gone":
+			    subject = "Mikey Exited"
 			    body = "The A/C has been turned up to " + str(off_temp) + ". It is currently " + str(indoorTemp) + " in the house."
+			    recipient = roommate_1_mail
+			    self.sendErrorMail(subject, body, recipient)
+			elif response['items'][i].title == "roomate_2 entered" and roomate_1 == "gone":
+			    subject = "Roomate_2 Entered"
+			    body = "The A/C has been turned down to " + str(on_temp) + ". It is currently " + str(indoorTemp) + " in the house."
 			    recipient = roommate_2_mail
 			    self.sendErrorMail(subject, body, recipient)
-			elif response['items'][i].title == "roommate1 entered" and roommate2 == "gone":
-			    subject = "I can hardly wait till you walk in the door!!"
-			    body = "The A/C has been turned down to " + str(on_temp) + ". It is currently " + str(indoorTemp) + " in the house."
-			    recipient = roommate_1_mail
-			    self.sendErrorMail(subject, body, recipient)
-			elif response['items'][i].title == "roommate1 exited" and roommate2 == "here":
-			    subject = "OKKKKK BYEEEEE"
+			elif response['items'][i].title == "roomate_2 exited" and roomate_1 == "here":
+			    subject = "Roomate_2 Exited"
 			    body = "The A/C will be turned up to " + str(off_temp) + " when Mikey leaves. It is currently " + str(indoorTemp) + " in the house."
-			    recipient = roommate_1_mail
+			    recipient = roommate_2_mail
 			    self.sendErrorMail(subject, body, recipient)
-			elif response['items'][i].title == "roommate1 exited" and roommate2 == "gone":
-			    subject = "OKKKKK BYEEEEE"
+			elif response['items'][i].title == "roomate_2 exited" and roomate_1 == "gone":
+			    subject = "Roomate_2 Exited"
 			    body = "The A/C has been turned up to " + str(off_temp) + ". It is currently " + str(indoorTemp) + " in the house."
-			    recipient = roommate_1_mail
+			    recipient = roommate_2_mail
 			    self.sendErrorMail(subject, body, recipient)
 
 			#We've processed the message, now let's mark it as read so we don't act on it again
@@ -388,17 +409,17 @@ class rubustatDaemon(Daemon):
 			    typ ,data = obj.search(None,'UnSeen')
 			    obj.store(data[0].replace(' ',','),'+FLAGS','\Seen')
 
-			if roommate1 == "gone" and roommate2 == "gone":
+		    if roomate_2 == "gone" and roomate_1 == "gone":
 			    scheduled = False
-			elif roommate1 == "here" and roommate2 == "gone":
+		    elif roomate_2 == "here" and roomate_1 == "gone":
 			    scheduled = True
-			elif roommate1 == "gone" and roommate2 == "here":
-			    schedule = True
-			elif roommate1 == "here" and roommate2 == "here":
+		    elif roomate_2 == "gone" and roomate_1 == "here":
+			    scheduled = True
+		    elif roomate_2 == "here" and roomate_1 == "here":
 			    scheduled = True
 
 		    self.gps_change(scheduled)
-
+		    
 
             ### check if we need to send error mail
             #cooling 
@@ -426,7 +447,7 @@ class rubustatDaemon(Daemon):
 
 		    if DEBUG == 1:
 			log = open("logs/debug_" + datetime.datetime.now().strftime('%Y%m%d') + ".log", "a")
-			log.write("MAIL: Sent mail to " + recipient + " at " + time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()) + "\n")
+			log.write("MAIL: Sent mail to " + recipient + " at " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + "\n")
 			log.close()
 
 		if mailEnabled == True and (indoorTemp - float(targetTemp) ) < errorThreshold:
@@ -456,7 +477,7 @@ class rubustatDaemon(Daemon):
 		    
 		    if DEBUG == 1:
 			log = open("logs/debug_" + datetime.datetime.now().strftime('%Y%m%d') + ".log", "a")
-			log.write("MAIL: Sent mail to " + recipient + " at " + time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()) + "\n")
+			log.write("MAIL: Sent mail to " + recipient + " at " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + "\n")
 			log.close()
 
 		if mailEnabled == True and (float(targetTemp) - indoorTemp ) < errorThreshold:
@@ -478,7 +499,7 @@ class rubustatDaemon(Daemon):
                     if indoorTemp < targetTemp - inactive_hysteresis:
                         if DEBUG == 1:
                             log = open("logs/debug_" + datetime.datetime.now().strftime('%Y%m%d') + ".log", "a")
-                            log.write("STATE: Switching to heat at " + time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()) + "\n")
+                            log.write("STATE: Switching to heat at " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + "\n")
                             log.close()
                         hvacState = self.heat()
 
@@ -486,7 +507,7 @@ class rubustatDaemon(Daemon):
                     if indoorTemp > targetTemp + active_hysteresis:
                         if DEBUG == 1:
                             log = open("logs/debug_" + datetime.datetime.now().strftime('%Y%m%d') + ".log", "a")
-                            log.write("STATE: Switching to fan_to_idle at " + time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()) + "\n")
+                            log.write("STATE: Switching to fan_to_idle at " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + "\n")
                             log.close()
 			emails = 0
 			length = 0
@@ -494,14 +515,14 @@ class rubustatDaemon(Daemon):
                         time.sleep(30)
                         if DEBUG == 1:
                             log = open("logs/debug_" + datetime.datetime.now().strftime('%Y%m%d') + ".log", "a")
-                            log.write("STATE: Switching to idle at " + time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()) + "\n")
+                            log.write("STATE: Switching to idle at " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + "\n")
                             log.close()
                         hvacState = idle()
 
                 elif hvacState == -1: # it's cold out, why is the AC running?
                         if DEBUG == 1:
                             log = open("logs/debug_" + datetime.datetime.now().strftime('%Y%m%d') + ".log", "a")
-                            log.write("STATE: Switching to idle at " + time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()) + "\n")
+                            log.write("STATE: Switching to idle at " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + "\n")
                             log.close()
                         hvacState = self.idle()
 
@@ -511,7 +532,7 @@ class rubustatDaemon(Daemon):
                     if indoorTemp > targetTemp + inactive_hysteresis:
                         if DEBUG == 1:
                             log = open("logs/debug_" + datetime.datetime.now().strftime('%Y%m%d') + ".log", "a")
-                            log.write("STATE: Switching to cool at " + time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()) + "\n")
+                            log.write("STATE: Switching to cool at " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + "\n")
                             log.close()
                         hvacState = self.cool()
 
@@ -519,7 +540,7 @@ class rubustatDaemon(Daemon):
                     if indoorTemp < targetTemp - active_hysteresis:
                         if DEBUG == 1:
                             log = open("logs/debug_" + datetime.datetime.now().strftime('%Y%m%d') + ".log", "a")
-                            log.write("STATE: Switching to fan_to_idle at " + time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()) + "\n")
+                            log.write("STATE: Switching to fan_to_idle at " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + "\n")
                             log.close()
 			emails = 0
 			length = 0
@@ -527,14 +548,14 @@ class rubustatDaemon(Daemon):
                         time.sleep(30)
                         if DEBUG == 1:
                             log = open("logs/debug_" + datetime.datetime.now().strftime('%Y%m%d') + ".log", "a")
-                            log.write("STATE: Switching to idle at " + time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()) + "\n")
+                            log.write("STATE: Switching to idle at " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + "\n")
                             log.close()
                         hvacState = self.idle()
 
                 elif hvacState == 1: # it's hot out, why is the heater on?
                         if DEBUG == 1:
                             log = open("logs/debug_" + datetime.datetime.now().strftime('%Y%m%d') + ".log", "a")
-                            log.write("STATE: Switching to fan_to_idle at " + time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()) + "\n")
+                            log.write("STATE: Switching to fan_to_idle at " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + "\n")
                             log.close()
                         hvacState = self.idle()
             else:
@@ -546,7 +567,7 @@ class rubustatDaemon(Daemon):
                 coolStatus = int(subprocess.Popen("cat /sys/class/gpio/gpio" + str(AC_PIN) + "/value", shell=True, stdout=subprocess.PIPE).stdout.read().strip())
                 fanStatus = int(subprocess.Popen("cat /sys/class/gpio/gpio" + str(FAN_PIN) + "/value", shell=True, stdout=subprocess.PIPE).stdout.read().strip())
                 log = open("logs/debug_" + datetime.datetime.now().strftime('%Y%m%d') + ".log", "a")
-                log.write("Report at " + time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()) + ":\n")
+                log.write("Report at " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + ":\n")
                 log.write("hvacState = " + str(hvacState)+ "\n")
                 log.write("indoorTemp = " + str(indoorTemp)+ "\n")
                 log.write("targetTemp = " + str(targetTemp)+ "\n")
@@ -554,7 +575,7 @@ class rubustatDaemon(Daemon):
                 log.write("coolStatus = " + str(coolStatus)+ "\n")
                 log.write("fanStatus = " + str(fanStatus)+ "\n")
 		#Who is home?
-		log.write("roommateStatus = roommate2: " + str(roommate2) + " roommate1: " + str(roommate1) +"\n")
+		log.write("roommateStatus = roomate_1: " + str(roomate_1) + " roomate_2: " + str(roomate_2) +"\n")
 
                 log.close()
 
