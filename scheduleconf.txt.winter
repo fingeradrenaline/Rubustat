@@ -1,0 +1,52 @@
+[scheduleconf]
+#24 hour format for hours
+#No leading zeros
+#Quotes are not necessary
+
+#If you want always on, set format as follows:
+#day_off_hour = 23
+#day_off_minute = 58
+#day_on_hour = 23
+#day_on_minute = 59
+
+
+monday_off_hour = 20
+monday_off_minute = 00
+monday_on_hour = 16
+monday_on_minute = 00
+
+
+tuesday_off_hour = 20
+tuesday_off_minute = 00
+tuesday_on_hour = 16
+tuesday_on_minute = 00
+
+
+wednesday_off_hour = 20
+wednesday_off_minute = 00
+wednesday_on_hour = 16
+wednesday_on_minute = 00
+
+
+thursday_off_hour = 20
+thursday_off_minute = 00
+thursday_on_hour = 16
+thursday_on_minute = 00
+
+
+friday_off_hour = 20
+friday_off_minute = 00
+friday_on_hour = 16
+friday_on_minute = 00
+
+
+saturday_off_hour = 20
+saturday_off_minute = 0
+saturday_on_hour = 9
+saturday_on_minute = 00
+
+
+sunday_off_hour = 20
+sunday_off_minute = 00
+sunday_on_hour = 9
+sunday_on_minute = 00
