@@ -66,7 +66,7 @@ if mailEnabled == True:
 #scheduleEnabled = config.getboolean('schedule', 'enabled')
 
 config.read("scheduleconf.txt")
-now = datetime.datetime.now(
+now = datetime.datetime.now()
 
 class rubustatDaemon(Daemon):
 
